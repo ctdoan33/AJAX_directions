@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+    <title></title>
+    <script>
+        $(document).ready(function(){
+            $('form').submit(function(){
+                $('#directions').html("<img src='../../static/google_maps_directions/loading_apple.gif' alt='loading animation'>")
+                $.post(
+                    $(this).attr('action'),
+                    $(this).serialize(),
+                    function(res){
+                        var html_string = "";
+                        if(res.status == "OK"){
+                            for(x in res.routes[0].legs){
+                                var leg = res.routes[0].legs[x];
+                                html_string += "<p>Starting at: "+leg.start_address+"</p>";
+                                for(y in leg.steps){
+                                    html_string += "<p>"+leg.steps[y].html_instructions+"</p>";
+                                    html_string += "<p>"+leg.steps[y].distance.text+", "+leg.steps[y].duration.text+"</p>"
+                                }
+                                html_string += "<p>Destination: "+leg.end_address+"</p>";
+                            }
+                        }else{
+                            html_string = "Not Found";
+                        }
+                        $('#directions').html(html_string);
+                    },
+                    'json'
+                );
+                return false;
+            });
+        });
+    </script>
+</head>
+<body>
+    <form action="/directions" method="post">
+        {% csrf_token %}
+        <label for="origin">Start Address:</label>
+        <input id="origin" name="origin" type="search">
+        <label for="destination">Destination Address:</label>
+        <input id="destination" name="destination" type="search">
+        <input type="submit" value="Get Directions">
+    </form>
+    <div id="directions"></div>
+</body>
+</html>
